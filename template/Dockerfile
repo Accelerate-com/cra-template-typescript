@@ -1,0 +1,19 @@
+FROM node:latest AS builder
+
+WORKDIR /app
+
+COPY . .
+
+RUN npm ci
+
+RUN npm test -- --watchAll=false
+
+RUN npm run build
+
+FROM nginx:latest
+
+COPY --from=builder /app/build /usr/share/nginx/html/
+
+COPY --from=builder /app/nginx.conf /etc/nginx/conf.d/default.conf
+
+CMD ["nginx", "-g", "daemon off;"]
